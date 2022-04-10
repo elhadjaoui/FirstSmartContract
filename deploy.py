@@ -1,7 +1,11 @@
 from dis import Bytecode
 import json
+import os
 from solcx import compile_standard, install_solc 
 from web3 import Web3
+from dotenv import load_dotenv
+
+load_dotenv()
 
 with open("./SimpleStorage.sol", "r") as file:
         simple_storage_file = file.read()
@@ -25,7 +29,7 @@ with open("compiled_code.json", "w") as file :
 
 
 # get bytecode 
-bytecode = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"]["bytecode"]
+bytecode = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"]["bytecode"]["object"]
 
 # get abi 
 abi = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
@@ -33,10 +37,24 @@ abi = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 # connect to ganache:
 w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:1337'))
 chainid = 1337
-my_address = "0xE7E7BE4ebE7775BE17f5c1eef9b87db83a163A18"
-private_key = "e46585f5e64790b6a61456fb0a2a3ec2a8ba1bc7a824e3714d94bfcf01190ee4"
+my_address = "0x7d0fEE1f9a8D119C6A906667732675cC49cd49d9"
+private_key = os.getenv("PRIVATE_KEY")
+print(private_key)
 
 # create the contract in python 
 SimpleStorage  = w3.eth.contract(abi=abi, bytecode=bytecode)
-print(SimpleStorage)
+# print(SimpleStorage)
 nonce = w3.eth.getTransactionCount(my_address)
+# print(nonce)
+
+# Build Transaction -------------------------------------
+transaction = SimpleStorage.constructor().buildTransaction({ "gasPrice": w3.eth.gas_price, "chainId": chainid, "from": my_address, "nonce": nonce})
+# print(transaction)
+
+# Sign Transaction---------------------------------------
+signed_transaction = w3.eth.account.sign_transaction(transaction,private_key)
+# print(signed_transaction)
+
+# Send Transaction
+transaction_hash = w3.eth.send_raw_transaction(signed_transaction.rawTransaction)
+print(transaction_hash)
