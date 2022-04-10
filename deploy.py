@@ -1,8 +1,9 @@
-from solcx import compile_standard
+from solcx import compile_standard, install_solc
+from web3 import  Web3
+import  json
 
 with open("./SimpleStorage.sol", "r") as file:
         simple_storage_file = file.read()
-        print(simple_storage_file)
 
 compile_sol = compile_standard(
     {
@@ -17,4 +18,9 @@ compile_sol = compile_standard(
     },
     solc_version="0.8.0"
 )
-print(compile_sol)
+with open("./compiled_code.json", "w") as file:
+        json.dump(compile_sol, file)
+
+# get bytecode
+
+# bytecode = compile_sol["contracts"]
