@@ -1,7 +1,11 @@
 from dis import Bytecode
 import json
+import os
 from solcx import compile_standard, install_solc 
 from web3 import Web3
+from dotenv import load_dotenv
+
+load_dotenv()
 
 with open("./SimpleStorage.sol", "r") as file:
         simple_storage_file = file.read()
@@ -24,18 +28,50 @@ with open("compiled_code.json", "w") as file :
     json.dump(compile_sol,file)
 
 # get bytecode 
-bytecode = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"]["bytecode"]
+bytecode = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"]["bytecode"]["object"]
 
 # get abi 
 abi = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 
 # connect to ganache:
-w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:7545'))
+w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:1337'))
 chainid = 1337
-my_address = "0xE7E7BE4ebE7775BE17f5c1eef9b87db83a163A18"
-private_key = "e46585f5e64790b6a61456fb0a2a3ec2a8ba1bc7a824e3714d94bfcf01190ee4"
+my_address = "0x89516db7Afa136150db327CAdF52124e9D5a2E23"
+private_key = os.getenv("PRIVATE_KEY")
+# print(private_key)
 
 # create the contract in python 
 SimpleStorage  = w3.eth.contract(abi=abi, bytecode=bytecode)
-print(SimpleStorage)
+# print(SimpleStorage)
 nonce = w3.eth.getTransactionCount(my_address)
+# print(nonce)
+
+# ---------------------------------------Build Transaction -------------------------------------
+transaction = SimpleStorage.constructor().buildTransaction({ "gasPrice": w3.eth.gas_price, "chainId": chainid, "from": my_address, "nonce": nonce})
+# print(transaction)
+
+# ---------------------------------------Sign Transaction---------------------------------------
+signed_transaction = w3.eth.account.sign_transaction(transaction, private_key)
+# print(signed_transaction)
+
+# ---------------------------------------Send Transaction---------------------------------------
+transaction_hash = w3.eth.send_raw_transaction(signed_transaction.rawTransaction)
+# print(transaction_hash)
+transaction_receipt = w3.eth.wait_for_transaction_receipt(transaction_hash)
+# print(transaction_receipt)
+
+# we interact with blockchain with a call or trasact
+# call -> Simulate making the call and getting a return value without change the state of the blockchain
+# transact -> Make a state change 
+Simple_Storage = w3.eth.contract(address=transaction_receipt.contractAddress, abi=abi)
+print(Simple_Storage.functions.retrieve().call())
+
+# ---------------------------------------Build Transaction -------------------------------------
+store_transaction = Simple_Storage.functions.Store(22).buildTransaction({ "gasPrice": w3.eth.gas_price, "chainId": chainid, "from": my_address, "nonce": nonce + 1})
+# ---------------------------------------Sign Transaction---------------------------------------
+signed_store_transaction =  w3.eth.account.sign_transaction(store_transaction, private_key)
+# ---------------------------------------Send Transaction---------------------------------------
+stored_transactions_hash = w3.eth.send_raw_transaction(signed_store_transaction.rawTransaction)
+# ---------------------------------------Wait for Transaction---------------------------------------
+stored_transaction_receipt =  w3.eth.wait_for_transaction_receipt(stored_transactions_hash)
+print(Simple_Storage.functions.retrieve().call())
