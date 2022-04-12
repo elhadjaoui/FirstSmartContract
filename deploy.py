@@ -34,9 +34,9 @@ bytecode = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"]
 abi = compile_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 
 # connect to ganache:
-w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:1337'))
-chainid = 1337
-my_address = "0x89516db7Afa136150db327CAdF52124e9D5a2E23"
+w3 = Web3(Web3.HTTPProvider('https://rinkeby.infura.io/v3/60173e525c114ac29c11a01b56f080a4'))
+chainid = 4
+my_address = "0xB879168AEDfF80B89792398a0Ce73Dd0e0238E1F"
 private_key = os.getenv("PRIVATE_KEY")
 # print(private_key)
 
@@ -47,6 +47,7 @@ nonce = w3.eth.getTransactionCount(my_address)
 # print(nonce)
 
 # ---------------------------------------Build Transaction -------------------------------------
+print("Deploying contract...")
 transaction = SimpleStorage.constructor().buildTransaction({ "gasPrice": w3.eth.gas_price, "chainId": chainid, "from": my_address, "nonce": nonce})
 # print(transaction)
 
@@ -58,6 +59,7 @@ signed_transaction = w3.eth.account.sign_transaction(transaction, private_key)
 transaction_hash = w3.eth.send_raw_transaction(signed_transaction.rawTransaction)
 # print(transaction_hash)
 transaction_receipt = w3.eth.wait_for_transaction_receipt(transaction_hash)
+print("Deployed.")
 # print(transaction_receipt)
 
 # we interact with blockchain with a call or trasact
@@ -67,6 +69,7 @@ Simple_Storage = w3.eth.contract(address=transaction_receipt.contractAddress, ab
 print(Simple_Storage.functions.retrieve().call())
 
 # ---------------------------------------Build Transaction -------------------------------------
+print("Updating contract...")
 store_transaction = Simple_Storage.functions.Store(22).buildTransaction({ "gasPrice": w3.eth.gas_price, "chainId": chainid, "from": my_address, "nonce": nonce + 1})
 # ---------------------------------------Sign Transaction---------------------------------------
 signed_store_transaction =  w3.eth.account.sign_transaction(store_transaction, private_key)
@@ -74,4 +77,5 @@ signed_store_transaction =  w3.eth.account.sign_transaction(store_transaction, p
 stored_transactions_hash = w3.eth.send_raw_transaction(signed_store_transaction.rawTransaction)
 # ---------------------------------------Wait for Transaction---------------------------------------
 stored_transaction_receipt =  w3.eth.wait_for_transaction_receipt(stored_transactions_hash)
+print("Updated.")
 print(Simple_Storage.functions.retrieve().call())
