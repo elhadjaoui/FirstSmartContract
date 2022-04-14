@@ -1,0 +1,3 @@
+brownie accounts list 
+brownie accounts new simo-account
+brownie accounts delete simo-account
