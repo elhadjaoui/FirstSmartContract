@@ -1,3 +1,10 @@
 brownie accounts list 
 brownie accounts new simo-account
 brownie accounts delete simo-account
+
+**********************************************
+brownie test -k [function name]
+brownie test -s -> for more info
+brownie test --pdb ---> to debug
+brownie networks list ---> list all the networks
+brownie run scripts/deploy.py --network rinkeby
