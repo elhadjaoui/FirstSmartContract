@@ -1,0 +1,7 @@
+As Ethereum uses EVM(Ethereum Virtual Machine) as a core component of the network, smart contract code written in high-level languages needs to be compiled into EVM bytecode to be run. EMV Bytecode is an executable code on EVM and Contract ABI is an interface to interact with EVM bytecode. For example, if you want to call a function in a smart contract with your JavaScript code, ABI plays a role as an intermediary between your JavaScript code and EVM bytecode to interact with each other. 
+
+
+* Application Binary Interface (ABI): a communication layer between solidity and Javascript, in JSON format
+* Bytecode: the low level machine language that gets executed by the the EVM
+
+simple_storage = SimpleStorage[-1] # [-1] go get the index thats one less then the length / get us the most recent deployment
