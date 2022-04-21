@@ -5,3 +5,8 @@ As Ethereum uses EVM(Ethereum Virtual Machine) as a core component of the networ
 * Bytecode: the low level machine language that gets executed by the the EVM
 
 simple_storage = SimpleStorage[-1] # [-1] go get the index thats one less then the length / get us the most recent deployment
+
+****************************Contract deployment****************************
+Contract deployment is a special Ethereum transaction sent to the address 0.
+The deployment has the side effects of creating bytecode at a specific address (i.e, it creates a smart contract account).
+Contracts are deployed at predictable addresses based on the address and nonce of the account creating the contract.
