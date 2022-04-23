@@ -1,6 +1,8 @@
-from tkinter.tix import Tree
+
 from brownie import accounts, FundMe, network, config, MockV3Aggregator
-from scripts.helpful_scripts import get_account
+from scripts.helpful_scripts import get_account, deploy_mock
+
+
 
 def deploy_fund_me():
     account = get_account()
@@ -8,15 +10,11 @@ def deploy_fund_me():
     if network.show_active() != "development":
         price_feed_address = config["networks"][network.show_active()]["eth_usd_price_feed"]
     else:
-        print(f"the active network is {network.show_active()}")
-        print(f"Deploying Mocks...")
-        mock_v3_aggregator = MockV3Aggregator.deploy(18, 2000000000000000000, {"from":account })
-        print(f"Mocks Deployed, address = {mock_v3_aggregator.address}.")
-        price_feed_address = mock_v3_aggregator.address
+        deploy_mock()
+        price_feed_address = MockV3Aggregator[-1].address
 
 
-
-    fund_me = FundMe.deploy(price_feed_address, {"from":account}, publish_source=True)
+    fund_me = FundMe.deploy(price_feed_address, {"from":account}, publish_source=config["networks"][network.show_active()].get("verify"))
     print(f"our contract deployed to {fund_me.address}")
 
 
